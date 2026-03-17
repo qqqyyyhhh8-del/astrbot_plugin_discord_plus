@@ -1,16 +1,22 @@
 # astrbot_plugin_discord_plus
 
-AstrBot Discord enhancement plugin.
+AstrBot 的 Discord 增强插件。
 
-This repository currently provides one missing native behavior for the Discord adapter: showing the bot as typing while AstrBot is waiting for the LLM response.
+这个仓库当前先补上 AstrBot 原生 Discord 适配里缺失的一项体验：当 AstrBot 正在等待大模型返回结果时，让 Discord 客户端显示机器人“正在输入”。
 
-## Current Feature
+English version: [README.en.md](./README.en.md)
 
-- Discord typing indicator during `on_waiting_llm_request`
-- Automatic stop after the LLM response is returned
-- Modular feature layout for future Discord-specific enhancements
+## 简介
 
-## Project Structure
+这个插件不是按“单功能脚本”来组织的，而是按“Discord 功能模块集合”来设计的。
+
+当前已经实现：
+
+- 在 `on_waiting_llm_request` 阶段显示 Discord typing indicator
+- 在 `on_llm_response` 返回后自动停止 typing 状态
+- 预留模块化结构，方便继续添加新的 Discord 专属功能
+
+## 目录结构
 
 ```text
 .
@@ -25,34 +31,43 @@ This repository currently provides one missing native behavior for the Discord a
         `-- discord_typing.py
 ```
 
-## How It Works
+## 工作方式
 
-`main.py` registers the AstrBot plugin and forwards lifecycle hooks into the modular runtime.
+`main.py`
 
-`discord_toolkit/runtime.py` dispatches events to feature modules.
+负责注册 AstrBot 插件，并把 AstrBot 生命周期事件转发给内部运行时。
 
-`discord_toolkit/features/discord_typing.py` starts a background typing loop when AstrBot enters `on_waiting_llm_request`, then stops it after `on_llm_response`.
+`discord_toolkit/runtime.py`
 
-`discord_toolkit/discord_bridge.py` tries to locate the Discord channel object from the AstrBot event and calls the Discord typing API in a tolerant way.
+负责统一分发事件到各个功能模块，避免以后所有逻辑都堆在入口文件里。
 
-## Installation
+`discord_toolkit/features/discord_typing.py`
 
-1. Put this plugin directory under AstrBot's `data/plugins/`.
-2. Make sure the plugin folder name is `astrbot_plugin_discord_plus` or a name AstrBot can load correctly.
-3. Reload plugins from the AstrBot admin panel.
-4. Test it in Discord by sending a message that triggers an LLM response.
+负责实现“正在输入”功能：AstrBot 进入 `on_waiting_llm_request` 时启动后台 typing 循环，在 `on_llm_response` 后结束。
 
-## Extending It
+`discord_toolkit/discord_bridge.py`
 
-To add a new Discord-only feature:
+负责从 AstrBot 事件对象里尽量稳妥地找到 Discord channel 对象，并调用 Discord 的 typing API。这里用了较宽松的探测方式，目的是减少对 AstrBot 内部实现细节的硬编码依赖。
 
-1. Create a new module under `discord_toolkit/features/`.
-2. Implement the feature class on top of `FeatureBase`.
-3. Register the feature in `DiscordPlusPlugin` inside `main.py`.
+## 安装方式
 
-This keeps the plugin entrypoint small and avoids stacking all behavior into one file.
+1. 把这个插件目录放到 AstrBot 的 `data/plugins/` 下。
+2. 确保插件目录名能被 AstrBot 正确识别，推荐直接使用 `astrbot_plugin_discord_plus`。
+3. 在 AstrBot 管理面板中重载插件。
+4. 到 Discord 中发送一条会触发 LLM 回复的消息，观察机器人是否会显示“正在输入”。
 
-## Notes
+## 后续扩展
 
-- This plugin assumes AstrBot is already running with a Discord adapter that exposes Discord channel objects through the event payload.
-- The typing feature is implemented defensively because AstrBot adapter internals may differ between versions.
+如果后面要继续加 Discord 专属功能，建议按下面的方式扩展：
+
+1. 在 `discord_toolkit/features/` 下新增一个功能模块。
+2. 基于 `FeatureBase` 实现新的 feature 类。
+3. 在 `main.py` 的 `DiscordPlusPlugin` 中注册这个 feature。
+
+这样可以把插件保持成“入口简单、功能独立”的结构，后面继续迭代时不会很快失控。
+
+## 注意事项
+
+- 这个插件默认假设 AstrBot 的 Discord 适配器会把 Discord 原始对象挂到事件上下文里。
+- 由于不同 AstrBot 版本或适配器实现可能有差异，当前 typing 逻辑做了偏保守的兼容处理。
+- 当前环境里我只做了本地语法级校验，没有在完整 AstrBot 运行时里做实机联调。
