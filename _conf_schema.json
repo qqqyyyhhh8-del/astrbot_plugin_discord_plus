@@ -13,5 +13,121 @@
     "description": "是否在 Discord 中回复用户时自动引用原消息。",
     "type": "bool",
     "default": true
+  },
+  "send_permission_override_enabled": {
+    "description": "是否启用 Discord 发言权限覆盖。启用后，此插件的规则会优先于 AstrBot 的系统放行设置，未命中的 Discord 服务器/分类/频道/线程默认禁止发言。",
+    "type": "bool",
+    "default": true
+  },
+  "send_permission_rules": {
+    "description": "Discord 发言权限规则。可以手动输入，也可以先用管理员命令 /discord_send_rules_refresh 自动填充。越具体的规则优先级越高，同级规则以最后一条为准；默认 allow 都应为 false。",
+    "type": "template_list",
+    "templates": {
+      "guild": {
+        "name": "服务器规则",
+        "items": {
+          "guild_id": {
+            "type": "string",
+            "description": "Discord 服务器 ID。"
+          },
+          "guild_name": {
+            "type": "string",
+            "description": "服务器名称，仅用于备注。"
+          },
+          "allow": {
+            "type": "bool",
+            "description": "是否允许在该服务器内发言。",
+            "default": false
+          }
+        }
+      },
+      "category": {
+        "name": "分类规则",
+        "items": {
+          "guild_id": {
+            "type": "string",
+            "description": "Discord 服务器 ID。"
+          },
+          "guild_name": {
+            "type": "string",
+            "description": "服务器名称，仅用于备注。"
+          },
+          "category_id": {
+            "type": "string",
+            "description": "Discord 分类 ID。"
+          },
+          "category_name": {
+            "type": "string",
+            "description": "分类名称，仅用于备注。"
+          },
+          "allow": {
+            "type": "bool",
+            "description": "是否允许在该分类下发言。",
+            "default": false
+          }
+        }
+      },
+      "channel": {
+        "name": "频道规则",
+        "items": {
+          "guild_id": {
+            "type": "string",
+            "description": "Discord 服务器 ID。"
+          },
+          "guild_name": {
+            "type": "string",
+            "description": "服务器名称，仅用于备注。"
+          },
+          "channel_id": {
+            "type": "string",
+            "description": "Discord 频道 ID。"
+          },
+          "channel_name": {
+            "type": "string",
+            "description": "频道名称，仅用于备注。"
+          },
+          "allow": {
+            "type": "bool",
+            "description": "是否允许在该频道内发言。",
+            "default": false
+          }
+        }
+      },
+      "thread": {
+        "name": "线程规则",
+        "items": {
+          "guild_id": {
+            "type": "string",
+            "description": "Discord 服务器 ID。"
+          },
+          "guild_name": {
+            "type": "string",
+            "description": "服务器名称，仅用于备注。"
+          },
+          "channel_id": {
+            "type": "string",
+            "description": "所属父频道 ID。"
+          },
+          "channel_name": {
+            "type": "string",
+            "description": "所属父频道名称，仅用于备注。"
+          },
+          "thread_id": {
+            "type": "string",
+            "description": "Discord 线程 ID。"
+          },
+          "thread_name": {
+            "type": "string",
+            "description": "线程名称，仅用于备注。"
+          },
+          "allow": {
+            "type": "bool",
+            "description": "是否允许在该线程内发言。",
+            "default": false
+          }
+        }
+      }
+    },
+    "default": []
   }
 }

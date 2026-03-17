@@ -2,6 +2,19 @@
 
 本文件记录 `astrbot_plugin_discord_plus` 的版本变更。
 
+## [0.1.5] - 2026-03-17
+
+### Added
+
+- 新增 Discord 发言权限覆盖功能，可按服务器、分类、频道、线程四个粒度控制是否允许机器人回复。
+- 新增管理员命令 `/discord_send_rules_refresh`，可自动填充当前 Discord 客户端可见的规则项。
+- 新增管理员命令 `/discord_send_scope_here`，用于查看当前 Discord 作用域和发言判定。
+
+### Changed
+
+- 运行时在 `stop_event()` 后会停止继续分发后续 feature，确保发言权限覆盖能在等待 LLM 前截断回复。
+- 发言权限规则使用 `template_list` 配置，并且默认 `allow=false`。
+
 ## [0.1.4] - 2026-03-17
 
 ### Changed

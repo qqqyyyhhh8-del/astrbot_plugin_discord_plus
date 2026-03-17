@@ -16,6 +16,8 @@ Current features:
 - Stop typing automatically after `on_llm_response`
 - Convert default AstrBot `At` segments into Discord mention syntax
 - Add reply reference when the bot answers a Discord message
+- Override whether the bot may speak in a Discord guild, category, channel, or thread
+- Provide admin commands to auto-fill Discord send-permission rules
 - Keep a modular structure for future Discord-specific features
 
 ## Project Structure
@@ -53,7 +55,11 @@ Converts default AstrBot `At` segments into Discord-compatible `<@user_id>` ment
 
 `astrbot_plugin_discord_plus_core/features/discord_reply_reference.py`
 
-Adds a `Reply` component so Discord responses can reference the original message.
+Uses Discord-native `reply/reference` sending so replies can reference the original message.
+
+`astrbot_plugin_discord_plus_core/features/discord_send_permission.py`
+
+Controls whether the bot is allowed to speak for a Discord guild, category, channel, or thread, and supports auto-filling rule entries.
 
 `astrbot_plugin_discord_plus_core/discord_bridge.py`
 
@@ -73,8 +79,26 @@ The plugin now exposes one panel-editable option in the AstrBot admin UI:
 - `typing_enabled`
 - `mention_fix_enabled`
 - `reply_reference_enabled`
+- `send_permission_override_enabled`
+- `send_permission_rules`
 
 When a toggle is disabled, the plugin remains loaded but stops that specific Discord enhancement.
+
+`send_permission_rules` uses a `template_list` with four rule scopes:
+
+- `guild`
+- `category`
+- `channel`
+- `thread`
+
+Priority is `thread > channel > category > guild`. For rules at the same level, later entries win. Once send-permission override is enabled, unmatched Discord scopes are denied by default.
+
+## Admin Commands
+
+- `/discord_send_rules_refresh`
+  Scans guilds, categories, channels, and threads from the current Discord client and writes them into `send_permission_rules`. Newly discovered rules default to `allow=false`.
+- `/discord_send_scope_here`
+  Shows the current Discord guild / category / channel / thread IDs and whether speaking is currently allowed there.
 
 ## Extending
 
@@ -88,4 +112,5 @@ To add a new Discord-only feature:
 
 - This plugin assumes AstrBot's Discord adapter exposes Discord-native objects through the event context.
 - The typing logic is implemented defensively because AstrBot internals may vary across versions.
+- Send-permission override currently targets the LLM reply flow, so it governs whether the bot answers in that Discord scope.
 - Only local syntax-level validation has been done in this environment. Full AstrBot runtime verification has not been run here.

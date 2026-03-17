@@ -15,6 +15,8 @@ class DiscordFeatureRuntime:
                     "discord feature '%s' failed in decorating hook",
                     getattr(feature, "name", feature.__class__.__name__),
                 )
+            if _event_stopped(event):
+                break
 
     async def on_waiting_llm_request(self, event: Any) -> None:
         for feature in self._features:
@@ -25,6 +27,8 @@ class DiscordFeatureRuntime:
                     "discord feature '%s' failed in waiting hook",
                     getattr(feature, "name", feature.__class__.__name__),
                 )
+            if _event_stopped(event):
+                break
 
     async def on_llm_response(self, event: Any, resp: Any) -> None:
         for feature in self._features:
@@ -35,6 +39,8 @@ class DiscordFeatureRuntime:
                     "discord feature '%s' failed in response hook",
                     getattr(feature, "name", feature.__class__.__name__),
                 )
+            if _event_stopped(event):
+                break
 
     async def shutdown(self) -> None:
         for feature in self._features:
@@ -45,3 +51,13 @@ class DiscordFeatureRuntime:
                     "discord feature '%s' failed during shutdown",
                     getattr(feature, "name", feature.__class__.__name__),
                 )
+
+
+def _event_stopped(event: Any) -> bool:
+    checker = getattr(event, "is_stopped", None)
+    if callable(checker):
+        try:
+            return bool(checker())
+        except Exception:
+            return False
+    return False
