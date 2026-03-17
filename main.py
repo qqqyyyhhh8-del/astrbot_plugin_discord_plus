@@ -10,9 +10,9 @@ from astrbot.api.event import AstrMessageEvent, filter
 from astrbot.api.provider import LLMResponse
 from astrbot.api.star import Context, Star, register
 
-from discord_toolkit.config import get_typing_settings
-from discord_toolkit.features.discord_typing import DiscordTypingFeature
-from discord_toolkit.runtime import DiscordFeatureRuntime
+from astrbot_plugin_discord_plus_core.config import get_typing_settings
+from astrbot_plugin_discord_plus_core.features.discord_typing import DiscordTypingFeature
+from astrbot_plugin_discord_plus_core.runtime import DiscordFeatureRuntime
 
 
 @register(

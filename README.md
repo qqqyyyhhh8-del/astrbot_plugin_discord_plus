@@ -23,7 +23,7 @@ English version: [README.en.md](./README.en.md)
 |-- main.py
 |-- metadata.yaml
 |-- requirements.txt
-`-- discord_toolkit/
+`-- astrbot_plugin_discord_plus_core/
     |-- runtime.py
     |-- discord_bridge.py
     |-- feature_base.py
@@ -37,15 +37,15 @@ English version: [README.en.md](./README.en.md)
 
 负责注册 AstrBot 插件，并把 AstrBot 生命周期事件转发给内部运行时。
 
-`discord_toolkit/runtime.py`
+`astrbot_plugin_discord_plus_core/runtime.py`
 
 负责统一分发事件到各个功能模块，避免以后所有逻辑都堆在入口文件里。
 
-`discord_toolkit/features/discord_typing.py`
+`astrbot_plugin_discord_plus_core/features/discord_typing.py`
 
 负责实现“正在输入”功能：AstrBot 进入 `on_waiting_llm_request` 时启动后台 typing 循环，在 `on_llm_response` 后结束。
 
-`discord_toolkit/discord_bridge.py`
+`astrbot_plugin_discord_plus_core/discord_bridge.py`
 
 负责从 AstrBot 事件对象里尽量稳妥地找到 Discord channel 对象，并调用 Discord 的 typing API。这里用了较宽松的探测方式，目的是减少对 AstrBot 内部实现细节的硬编码依赖。
 
@@ -68,7 +68,7 @@ English version: [README.en.md](./README.en.md)
 
 如果后面要继续加 Discord 专属功能，建议按下面的方式扩展：
 
-1. 在 `discord_toolkit/features/` 下新增一个功能模块。
+1. 在 `astrbot_plugin_discord_plus_core/features/` 下新增一个功能模块。
 2. 基于 `FeatureBase` 实现新的 feature 类。
 3. 在 `main.py` 的 `DiscordPlusPlugin` 中注册这个 feature。
 

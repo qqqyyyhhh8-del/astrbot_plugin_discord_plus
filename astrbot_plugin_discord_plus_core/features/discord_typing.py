@@ -3,8 +3,12 @@ from collections.abc import Callable
 from contextlib import suppress
 from typing import Any
 
-from discord_toolkit.discord_bridge import build_event_key, find_discord_channel, trigger_typing
-from discord_toolkit.feature_base import FeatureBase
+from astrbot_plugin_discord_plus_core.discord_bridge import (
+    build_event_key,
+    find_discord_channel,
+    trigger_typing,
+)
+from astrbot_plugin_discord_plus_core.feature_base import FeatureBase
 
 
 class DiscordTypingFeature(FeatureBase):

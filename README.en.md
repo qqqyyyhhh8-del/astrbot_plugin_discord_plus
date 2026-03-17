@@ -23,7 +23,7 @@ Current features:
 |-- main.py
 |-- metadata.yaml
 |-- requirements.txt
-`-- discord_toolkit/
+`-- astrbot_plugin_discord_plus_core/
     |-- runtime.py
     |-- discord_bridge.py
     |-- feature_base.py
@@ -37,15 +37,15 @@ Current features:
 
 Registers the AstrBot plugin and forwards AstrBot lifecycle hooks into the internal runtime.
 
-`discord_toolkit/runtime.py`
+`astrbot_plugin_discord_plus_core/runtime.py`
 
 Dispatches events to feature modules so the plugin entrypoint stays small and maintainable.
 
-`discord_toolkit/features/discord_typing.py`
+`astrbot_plugin_discord_plus_core/features/discord_typing.py`
 
 Implements the typing feature. It starts a background typing loop when AstrBot enters `on_waiting_llm_request` and stops after `on_llm_response`.
 
-`discord_toolkit/discord_bridge.py`
+`astrbot_plugin_discord_plus_core/discord_bridge.py`
 
 Tries to locate a Discord channel object from the AstrBot event and call the Discord typing API defensively, avoiding tight coupling to AstrBot adapter internals.
 
@@ -68,7 +68,7 @@ When disabled, the plugin remains loaded but stops sending Discord typing status
 
 To add a new Discord-only feature:
 
-1. Add a new module under `discord_toolkit/features/`.
+1. Add a new module under `astrbot_plugin_discord_plus_core/features/`.
 2. Implement the feature class on top of `FeatureBase`.
 3. Register the feature in `DiscordPlusPlugin` inside `main.py`.
 
