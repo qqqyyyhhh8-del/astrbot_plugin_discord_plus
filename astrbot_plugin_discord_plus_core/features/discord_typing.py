@@ -1,4 +1,5 @@
 import asyncio
+import errno
 from collections.abc import Callable
 from contextlib import suppress
 from typing import Any
@@ -64,8 +65,16 @@ class DiscordTypingFeature(FeatureBase):
                 await asyncio.sleep(self._interval_seconds)
         except asyncio.CancelledError:
             raise
-        except Exception:
-            self._logger.exception("discord typing loop failed for %s", key)
+        except Exception as exc:
+            if _is_expected_typing_error(exc):
+                _log_debug_or_warning(
+                    self._logger,
+                    "discord typing loop stopped for %s: %s",
+                    key,
+                    _describe_exception(exc),
+                )
+            else:
+                self._logger.exception("discord typing loop failed for %s", key)
         finally:
             self._tasks.pop(key, None)
 
@@ -77,3 +86,39 @@ class DiscordTypingFeature(FeatureBase):
         task.cancel()
         with suppress(asyncio.CancelledError):
             await task
+
+
+def _is_expected_typing_error(exc: BaseException) -> bool:
+    if isinstance(exc, (ConnectionResetError, ConnectionAbortedError, BrokenPipeError, TimeoutError)):
+        return True
+
+    if isinstance(exc, OSError) and exc.errno in {
+        errno.ECONNRESET,
+        errno.ECONNABORTED,
+        errno.EPIPE,
+        errno.ENOTCONN,
+        errno.ETIMEDOUT,
+        errno.EHOSTUNREACH,
+        errno.ENETUNREACH,
+    }:
+        return True
+
+    module_name = type(exc).__module__.lower()
+    return module_name.startswith("aiohttp") or module_name.startswith("discord")
+
+
+def _describe_exception(exc: BaseException) -> str:
+    text = str(exc).strip()
+    if text:
+        return f"{type(exc).__name__}: {text}"
+    return type(exc).__name__
+
+
+def _log_debug_or_warning(logger: Any, message: str, *args: Any) -> None:
+    debug = getattr(logger, "debug", None)
+    if callable(debug):
+        debug(message, *args)
+        return
+    warning = getattr(logger, "warning", None)
+    if callable(warning):
+        warning(message, *args)
