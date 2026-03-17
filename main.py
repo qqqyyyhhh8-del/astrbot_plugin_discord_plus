@@ -61,6 +61,7 @@ class DiscordPlusPlugin(Star):
                 config_getter=self._typing_enabled,
             )
         )
+        self._features = features
         self.runtime = DiscordFeatureRuntime(
             features=features,
             logger=logger,
@@ -68,16 +69,16 @@ class DiscordPlusPlugin(Star):
 
     @filter.on_waiting_llm_request()
     async def on_waiting_llm_request(self, event: AstrMessageEvent):
-        await self.runtime.on_waiting_llm_request(event)
+        await self._dispatch_runtime_hook("on_waiting_llm_request", event)
 
     @filter.on_llm_response()
     async def on_llm_response(self, event: AstrMessageEvent, resp: LLMResponse):
-        await self.runtime.on_llm_response(event, resp)
+        await self._dispatch_runtime_hook("on_llm_response", event, resp)
         return resp
 
     @filter.on_decorating_result()
     async def on_decorating_result(self, event: AstrMessageEvent):
-        await self.runtime.on_decorating_result(event)
+        await self._dispatch_runtime_hook("on_decorating_result", event)
 
     def _typing_enabled(self) -> bool:
         return discord_plus_config.get_typing_settings(self._plugin_config).enabled
@@ -94,6 +95,25 @@ class DiscordPlusPlugin(Star):
             settings = getter(self._plugin_config)
             return bool(getattr(settings, key, True))
         return _coerce_bool(_mapping_get(self._plugin_config, key, True), default=True)
+
+    async def _dispatch_runtime_hook(self, hook_name: str, *args) -> None:
+        runtime_hook = getattr(self.runtime, hook_name, None)
+        if callable(runtime_hook):
+            await runtime_hook(*args)
+            return
+
+        for feature in self._features:
+            feature_hook = getattr(feature, hook_name, None)
+            if not callable(feature_hook):
+                continue
+            try:
+                await feature_hook(*args)
+            except Exception:
+                logger.exception(
+                    "discord feature '%s' failed in fallback hook '%s'",
+                    getattr(feature, "name", feature.__class__.__name__),
+                    hook_name,
+                )
 
 
 def _mapping_get(obj, key: str, default):
