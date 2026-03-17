@@ -107,6 +107,10 @@ def serialize_send_permission_rules(rules: Iterable[SendPermissionRule]) -> list
     return [_serialize_rule(rule) for rule in rules]
 
 
+def get_send_permission_rule_key(rule: SendPermissionRule) -> tuple[str, str, str, str, str]:
+    return _rule_key(rule)
+
+
 def build_refresh_result(
     client: Any,
     existing_rules: Iterable[SendPermissionRule],

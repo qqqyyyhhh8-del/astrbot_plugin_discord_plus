@@ -18,6 +18,7 @@ English version: [README.en.md](./README.en.md)
 - 回复 Discord 用户时自动引用原消息
 - 按 Discord 服务器 / 分类 / 频道 / 线程覆盖是否允许机器人发言
 - 提供管理员命令自动填充 Discord 发言权限规则
+- 开机自动注册 Discord 原生管理命令，并提供中文 embed + UI 面板批量调整发言权限
 - 预留模块化结构，方便继续添加新的 Discord 专属功能
 
 ## 目录结构
@@ -61,6 +62,10 @@ English version: [README.en.md](./README.en.md)
 
 负责按 Discord 服务器 / 分类 / 频道 / 线程规则覆盖是否允许机器人发言，并提供规则自动填充能力。
 
+`astrbot_plugin_discord_plus_core/features/discord_send_permission_ui.py`
+
+负责开机自动注册 Discord 原生命令 `/discord_send_panel`，并提供仅管理员可见的中文交互面板，用于批量管理发言权限规则。
+
 `astrbot_plugin_discord_plus_core/discord_bridge.py`
 
 负责从 AstrBot 事件对象里尽量稳妥地找到 Discord channel 对象，并调用 Discord 的 typing API。这里用了较宽松的探测方式，目的是减少对 AstrBot 内部实现细节的硬编码依赖。
@@ -84,6 +89,8 @@ English version: [README.en.md](./README.en.md)
 
 关闭对应开关后，插件会保留加载状态，但会停止对应的 Discord 增强行为。
 
+AstrBot 配置界面仍然可以直接手动编辑 `send_permission_rules`；Discord 原生管理面板会读写同一份配置。
+
 `send_permission_rules` 使用 `template_list` 维护四种粒度的规则：
 
 - `guild`
@@ -99,6 +106,8 @@ English version: [README.en.md](./README.en.md)
   从当前 Discord 机器人连接中扫描服务器、分类、频道、线程，自动填充 `send_permission_rules`，新规则默认 `allow=false`。
 - `/discord_send_scope_here`
   显示当前 Discord 事件所在的服务器 / 分类 / 频道 / 线程 ID，以及当前是否允许发言。
+- `/discord_send_panel`
+  Discord 原生命令，插件启动时会自动向当前已连接的服务器同步注册。管理员执行后会收到仅自己可见的中文 embed 管理面板，可切换服务器、范围粒度、全选/反选当前页并批量允许或禁止发言。
 
 ## 后续扩展
 

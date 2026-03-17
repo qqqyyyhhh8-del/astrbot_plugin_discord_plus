@@ -18,6 +18,7 @@ Current features:
 - Add reply reference when the bot answers a Discord message
 - Override whether the bot may speak in a Discord guild, category, channel, or thread
 - Provide admin commands to auto-fill Discord send-permission rules
+- Auto-register a native Discord admin command with a Chinese embed/UI panel for bulk rule management
 - Keep a modular structure for future Discord-specific features
 
 ## Project Structure
@@ -61,6 +62,10 @@ Uses Discord-native `reply/reference` sending so replies can reference the origi
 
 Controls whether the bot is allowed to speak for a Discord guild, category, channel, or thread, and supports auto-filling rule entries.
 
+`astrbot_plugin_discord_plus_core/features/discord_send_permission_ui.py`
+
+Registers the native Discord `/discord_send_panel` command on startup and serves an admin-only ephemeral Chinese embed/UI for bulk permission management.
+
 `astrbot_plugin_discord_plus_core/discord_bridge.py`
 
 Tries to locate a Discord channel object from the AstrBot event and call the Discord typing API defensively, avoiding tight coupling to AstrBot adapter internals.
@@ -84,6 +89,8 @@ The plugin now exposes one panel-editable option in the AstrBot admin UI:
 
 When a toggle is disabled, the plugin remains loaded but stops that specific Discord enhancement.
 
+The AstrBot config panel can still edit `send_permission_rules` manually; the native Discord panel writes back to the same config entries.
+
 `send_permission_rules` uses a `template_list` with four rule scopes:
 
 - `guild`
@@ -99,6 +106,8 @@ Priority is `thread > channel > category > guild`. For rules at the same level, 
   Scans guilds, categories, channels, and threads from the current Discord client and writes them into `send_permission_rules`. Newly discovered rules default to `allow=false`.
 - `/discord_send_scope_here`
   Shows the current Discord guild / category / channel / thread IDs and whether speaking is currently allowed there.
+- `/discord_send_panel`
+  A native Discord command that is auto-synced on startup for connected guilds. Admins get an ephemeral Chinese embed/UI to switch guilds, change rule scope, select all/invert the current page, and batch allow or deny speaking.
 
 ## Extending
 

@@ -40,12 +40,19 @@ except ImportError:
     describe_scope = None
     serialize_send_permission_rules = None
 
+try:
+    from astrbot_plugin_discord_plus_core.features.discord_send_permission_ui import (
+        DiscordSendPermissionUIFeature,
+    )
+except ImportError:
+    DiscordSendPermissionUIFeature = None
+
 
 @register(
     "astrbot_plugin_discord_plus",
     "Codex",
     "Discord enhancement toolkit for AstrBot. Initial feature: typing indicator.",
-    "0.1.5",
+    "0.1.6",
     "",
 )
 class DiscordPlusPlugin(Star):
@@ -54,12 +61,20 @@ class DiscordPlusPlugin(Star):
         self._plugin_config = config or {}
         features = []
         self._send_permission_feature = None
+        self._send_permission_ui_feature = None
         if DiscordSendPermissionFeature is not None:
             self._send_permission_feature = DiscordSendPermissionFeature(
                 logger=logger,
                 config_getter=self._send_permission_settings,
             )
             features.append(self._send_permission_feature)
+            if DiscordSendPermissionUIFeature is not None:
+                self._send_permission_ui_feature = DiscordSendPermissionUIFeature(
+                    logger=logger,
+                    settings_getter=self._send_permission_settings,
+                    config_setter=self._set_plugin_config_value,
+                    config_saver=self._save_plugin_config,
+                )
         if DiscordReplyReferenceFeature is not None:
             features.append(
                 DiscordReplyReferenceFeature(
@@ -98,6 +113,12 @@ class DiscordPlusPlugin(Star):
     @filter.on_decorating_result()
     async def on_decorating_result(self, event: AstrMessageEvent):
         await self._dispatch_runtime_hook("on_decorating_result", event)
+
+    @filter.on_astrbot_loaded()
+    async def on_astrbot_loaded(self, *_args, **_kwargs):
+        if self._send_permission_ui_feature is None:
+            return
+        await self._send_permission_ui_feature.register_startup(self.context)
 
     @filter.permission_type(filter.PermissionType.ADMIN)
     @filter.command("discord_send_rules_refresh")
@@ -217,6 +238,11 @@ class DiscordPlusPlugin(Star):
         saver = getattr(self._plugin_config, "save_config", None)
         if callable(saver):
             saver()
+
+    async def terminate(self):
+        if self._send_permission_ui_feature is not None:
+            await self._send_permission_ui_feature.shutdown()
+        await self.runtime.shutdown()
 
 
 def _mapping_get(obj, key: str, default):

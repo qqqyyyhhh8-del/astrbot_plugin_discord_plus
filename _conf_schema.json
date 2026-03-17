@@ -20,7 +20,7 @@
     "default": true
   },
   "send_permission_rules": {
-    "description": "Discord 发言权限规则。可以手动输入，也可以先用管理员命令 /discord_send_rules_refresh 自动填充。越具体的规则优先级越高，同级规则以最后一条为准；默认 allow 都应为 false。",
+    "description": "Discord 发言权限规则。可以手动输入，也可以先用管理员命令 /discord_send_rules_refresh 自动填充，或使用启动后自动注册的原生命令 /discord_send_panel 通过中文交互面板批量管理。越具体的规则优先级越高，同级规则以最后一条为准；默认 allow 都应为 false。",
     "type": "template_list",
     "templates": {
       "guild": {
