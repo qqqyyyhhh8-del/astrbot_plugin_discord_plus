@@ -60,19 +60,23 @@ def _is_discord_message(obj: Any) -> bool:
 
 
 async def _send_native_reply(event: Any, raw_message: Any, content: str) -> bool:
-    send_kwargs = {
-        "content": content,
-        "mention_author": False,
-    }
+    allowed_mentions = _build_allowed_mentions()
 
     reply = getattr(raw_message, "reply", None)
     if callable(reply):
         try:
-            await reply(**send_kwargs)
+            await reply(
+                content=content,
+                mention_author=False,
+                allowed_mentions=allowed_mentions,
+            )
             return True
         except TypeError:
-            await reply(content)
-            return True
+            try:
+                await reply(content=content, mention_author=False)
+                return True
+            except TypeError:
+                pass
 
     channel = getattr(raw_message, "channel", None) or find_discord_channel(event)
     send = getattr(channel, "send", None)
@@ -80,11 +84,27 @@ async def _send_native_reply(event: Any, raw_message: Any, content: str) -> bool
         return False
 
     try:
-        await send(reference=raw_message, **send_kwargs)
+        await send(
+            content=content,
+            reference=raw_message,
+            allowed_mentions=allowed_mentions,
+        )
         return True
     except TypeError:
-        await send(content=content, reference=raw_message)
-        return True
+        return False
+
+
+def _build_allowed_mentions() -> Any | None:
+    try:
+        from discord import AllowedMentions
+    except Exception:
+        return None
+    return AllowedMentions(
+        everyone=True,
+        users=True,
+        roles=True,
+        replied_user=False,
+    )
 
 
 def _render_chain_as_discord_text(items: list[Any]) -> str | None:
