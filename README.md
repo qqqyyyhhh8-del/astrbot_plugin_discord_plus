@@ -56,6 +56,14 @@ English version: [README.en.md](./README.en.md)
 3. 在 AstrBot 管理面板中重载插件。
 4. 到 Discord 中发送一条会触发 LLM 回复的消息，观察机器人是否会显示“正在输入”。
 
+## 配置
+
+插件现在带有一个可在 AstrBot 管理界面修改的配置项：
+
+- `Discord 正在输入 -> 启用 typing indicator`
+
+关闭后，插件会保留加载状态，但不会再向 Discord 发送“正在输入”状态。
+
 ## 后续扩展
 
 如果后面要继续加 Discord 专属功能，建议按下面的方式扩展：

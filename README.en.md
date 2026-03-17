@@ -56,6 +56,14 @@ Tries to locate a Discord channel object from the AstrBot event and call the Dis
 3. Reload plugins from the AstrBot admin panel.
 4. Test it in Discord with a message that triggers an LLM response.
 
+## Configuration
+
+The plugin now exposes one panel-editable option in the AstrBot admin UI:
+
+- `Discord 正在输入 -> 启用 typing indicator`
+
+When disabled, the plugin remains loaded but stops sending Discord typing status.
+
 ## Extending
 
 To add a new Discord-only feature:
