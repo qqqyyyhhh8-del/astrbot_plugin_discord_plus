@@ -1,0 +1,1 @@
+# This plugin uses AstrBot and the Discord adapter already present in the host.
