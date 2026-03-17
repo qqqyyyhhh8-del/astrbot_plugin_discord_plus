@@ -8,9 +8,8 @@ class TypingSettings:
 
 
 def get_typing_settings(config: Any) -> TypingSettings:
-    section = _as_mapping(_mapping_get(config, "typing", {}))
     return TypingSettings(
-        enabled=_coerce_bool(_mapping_get(section, "enabled", True), default=True),
+        enabled=_coerce_bool(_mapping_get(config, "typing_enabled", True), default=True),
     )
 
 
@@ -24,23 +23,6 @@ def _mapping_get(obj: Any, key: str, default: Any) -> Any:
         except TypeError:
             return getter(key)
     return default
-
-
-def _as_mapping(obj: Any) -> dict[str, Any]:
-    if isinstance(obj, dict):
-        return obj
-    if obj is None:
-        return {}
-    getter = getattr(obj, "items", None)
-    if callable(getter):
-        try:
-            return dict(getter())
-        except Exception:
-            return {}
-    try:
-        return dict(obj)
-    except Exception:
-        return {}
 
 
 def _coerce_bool(value: Any, default: bool) -> bool:

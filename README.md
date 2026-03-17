@@ -60,7 +60,7 @@ English version: [README.en.md](./README.en.md)
 
 插件现在带有一个可在 AstrBot 管理界面修改的配置项：
 
-- `Discord 正在输入 -> 启用 typing indicator`
+- `typing_enabled`
 
 关闭后，插件会保留加载状态，但不会再向 Discord 发送“正在输入”状态。
 

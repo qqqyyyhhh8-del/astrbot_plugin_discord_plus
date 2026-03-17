@@ -60,7 +60,7 @@ Tries to locate a Discord channel object from the AstrBot event and call the Dis
 
 The plugin now exposes one panel-editable option in the AstrBot admin UI:
 
-- `Discord 正在输入 -> 启用 typing indicator`
+- `typing_enabled`
 
 When disabled, the plugin remains loaded but stops sending Discord typing status.
 

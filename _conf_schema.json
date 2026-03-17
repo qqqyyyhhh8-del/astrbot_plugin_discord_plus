@@ -1,17 +1,7 @@
-[
-  {
-    "name": "typing",
-    "type": "dict",
-    "label": "Discord 正在输入",
-    "description": "控制 Discord typing indicator 是否启用。",
-    "items": [
-      {
-        "name": "enabled",
-        "type": "bool",
-        "label": "启用 typing indicator",
-        "description": "当 AstrBot 等待 LLM 回复时，在 Discord 显示机器人正在输入。",
-        "default": true
-      }
-    ]
+{
+  "typing_enabled": {
+    "description": "是否在 AstrBot 等待 LLM 回复时向 Discord 显示“正在输入”状态。",
+    "type": "bool",
+    "default": true
   }
-]
+}
