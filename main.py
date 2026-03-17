@@ -33,7 +33,7 @@ except ImportError:
     "astrbot_plugin_discord_plus",
     "Codex",
     "Discord enhancement toolkit for AstrBot. Initial feature: typing indicator.",
-    "0.1.0",
+    "0.1.1",
     "",
 )
 class DiscordPlusPlugin(Star):
