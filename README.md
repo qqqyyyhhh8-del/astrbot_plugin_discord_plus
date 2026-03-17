@@ -14,6 +14,8 @@ English version: [README.en.md](./README.en.md)
 
 - 在 `on_waiting_llm_request` 阶段显示 Discord typing indicator
 - 在 `on_llm_response` 返回后自动停止 typing 状态
+- 把默认 At 组件转换成 Discord 可识别的提及格式
+- 回复 Discord 用户时自动引用原消息
 - 预留模块化结构，方便继续添加新的 Discord 专属功能
 
 ## 目录结构
@@ -45,6 +47,14 @@ English version: [README.en.md](./README.en.md)
 
 负责实现“正在输入”功能：AstrBot 进入 `on_waiting_llm_request` 时启动后台 typing 循环，在 `on_llm_response` 后结束。
 
+`astrbot_plugin_discord_plus_core/features/discord_mention_fix.py`
+
+负责把 AstrBot 默认的 `At` 组件转换成 Discord 可识别的 `<@user_id>` 提及格式。
+
+`astrbot_plugin_discord_plus_core/features/discord_reply_reference.py`
+
+负责在 Discord 回复中自动补上引用原消息的 `Reply` 组件。
+
 `astrbot_plugin_discord_plus_core/discord_bridge.py`
 
 负责从 AstrBot 事件对象里尽量稳妥地找到 Discord channel 对象，并调用 Discord 的 typing API。这里用了较宽松的探测方式，目的是减少对 AstrBot 内部实现细节的硬编码依赖。
@@ -61,8 +71,10 @@ English version: [README.en.md](./README.en.md)
 插件现在带有一个可在 AstrBot 管理界面修改的配置项：
 
 - `typing_enabled`
+- `mention_fix_enabled`
+- `reply_reference_enabled`
 
-关闭后，插件会保留加载状态，但不会再向 Discord 发送“正在输入”状态。
+关闭对应开关后，插件会保留加载状态，但会停止对应的 Discord 增强行为。
 
 ## 后续扩展
 

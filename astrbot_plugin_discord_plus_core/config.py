@@ -7,9 +7,28 @@ class TypingSettings:
     enabled: bool = True
 
 
+@dataclass(frozen=True, slots=True)
+class MessageDecorationSettings:
+    mention_fix_enabled: bool = True
+    reply_reference_enabled: bool = True
+
+
 def get_typing_settings(config: Any) -> TypingSettings:
     return TypingSettings(
         enabled=_coerce_bool(_mapping_get(config, "typing_enabled", True), default=True),
+    )
+
+
+def get_message_decoration_settings(config: Any) -> MessageDecorationSettings:
+    return MessageDecorationSettings(
+        mention_fix_enabled=_coerce_bool(
+            _mapping_get(config, "mention_fix_enabled", True),
+            default=True,
+        ),
+        reply_reference_enabled=_coerce_bool(
+            _mapping_get(config, "reply_reference_enabled", True),
+            default=True,
+        ),
     )
 
 

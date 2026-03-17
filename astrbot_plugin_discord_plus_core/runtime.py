@@ -6,6 +6,16 @@ class DiscordFeatureRuntime:
         self._features = list(features)
         self._logger = logger
 
+    async def on_decorating_result(self, event: Any) -> None:
+        for feature in self._features:
+            try:
+                await feature.on_decorating_result(event)
+            except Exception:
+                self._logger.exception(
+                    "discord feature '%s' failed in decorating hook",
+                    getattr(feature, "name", feature.__class__.__name__),
+                )
+
     async def on_waiting_llm_request(self, event: Any) -> None:
         for feature in self._features:
             try:

@@ -14,6 +14,13 @@ DISCOVERY_ATTRS = (
 
 
 def build_event_key(event: Any) -> str:
+    message_id = get_source_message_id(event)
+    if message_id not in (None, ""):
+        return f"message:{message_id}"
+    return f"event:{id(event)}"
+
+
+def get_source_message_id(event: Any) -> Any | None:
     message_obj = getattr(event, "message_obj", None)
     raw_message = getattr(message_obj, "raw_message", None)
     candidates = (
@@ -24,8 +31,21 @@ def build_event_key(event: Any) -> str:
     )
     for value in candidates:
         if value not in (None, ""):
-            return f"message:{value}"
-    return f"event:{id(event)}"
+            return value
+    return None
+
+
+def is_discord_event(event: Any) -> bool:
+    message_obj = getattr(event, "message_obj", None)
+    raw_message = getattr(message_obj, "raw_message", None)
+    if _is_discord_object(raw_message):
+        return True
+
+    channel = getattr(raw_message, "channel", None)
+    if _is_discord_object(channel):
+        return True
+
+    return find_discord_channel(event) is not None
 
 
 def find_discord_channel(event: Any) -> Any | None:
@@ -106,7 +126,11 @@ def _seed_objects(event: Any) -> list[Any]:
 def _is_discord_channel(obj: Any) -> bool:
     if obj is None:
         return False
-    module_name = type(obj).__module__.lower()
-    if "discord" not in module_name:
+    return _is_discord_object(obj) and (hasattr(obj, "trigger_typing") or hasattr(obj, "typing"))
+
+
+def _is_discord_object(obj: Any) -> bool:
+    if obj is None:
         return False
-    return hasattr(obj, "trigger_typing") or hasattr(obj, "typing")
+    module_name = type(obj).__module__.lower()
+    return "discord" in module_name

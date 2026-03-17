@@ -14,6 +14,8 @@ Current features:
 
 - Show Discord typing status during `on_waiting_llm_request`
 - Stop typing automatically after `on_llm_response`
+- Convert default AstrBot `At` segments into Discord mention syntax
+- Add reply reference when the bot answers a Discord message
 - Keep a modular structure for future Discord-specific features
 
 ## Project Structure
@@ -45,6 +47,14 @@ Dispatches events to feature modules so the plugin entrypoint stays small and ma
 
 Implements the typing feature. It starts a background typing loop when AstrBot enters `on_waiting_llm_request` and stops after `on_llm_response`.
 
+`astrbot_plugin_discord_plus_core/features/discord_mention_fix.py`
+
+Converts default AstrBot `At` segments into Discord-compatible `<@user_id>` mentions.
+
+`astrbot_plugin_discord_plus_core/features/discord_reply_reference.py`
+
+Adds a `Reply` component so Discord responses can reference the original message.
+
 `astrbot_plugin_discord_plus_core/discord_bridge.py`
 
 Tries to locate a Discord channel object from the AstrBot event and call the Discord typing API defensively, avoiding tight coupling to AstrBot adapter internals.
@@ -61,8 +71,10 @@ Tries to locate a Discord channel object from the AstrBot event and call the Dis
 The plugin now exposes one panel-editable option in the AstrBot admin UI:
 
 - `typing_enabled`
+- `mention_fix_enabled`
+- `reply_reference_enabled`
 
-When disabled, the plugin remains loaded but stops sending Discord typing status.
+When a toggle is disabled, the plugin remains loaded but stops that specific Discord enhancement.
 
 ## Extending
 
