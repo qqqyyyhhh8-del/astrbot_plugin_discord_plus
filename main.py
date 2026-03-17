@@ -10,18 +10,23 @@ from astrbot.api.event import AstrMessageEvent, filter
 from astrbot.api.provider import LLMResponse
 from astrbot.api.star import Context, Star, register
 
-from astrbot_plugin_discord_plus_core.config import (
-    get_message_decoration_settings,
-    get_typing_settings,
-)
-from astrbot_plugin_discord_plus_core.features.discord_mention_fix import (
-    DiscordMentionFixFeature,
-)
-from astrbot_plugin_discord_plus_core.features.discord_reply_reference import (
-    DiscordReplyReferenceFeature,
-)
+from astrbot_plugin_discord_plus_core import config as discord_plus_config
 from astrbot_plugin_discord_plus_core.features.discord_typing import DiscordTypingFeature
 from astrbot_plugin_discord_plus_core.runtime import DiscordFeatureRuntime
+
+try:
+    from astrbot_plugin_discord_plus_core.features.discord_mention_fix import (
+        DiscordMentionFixFeature,
+    )
+except ImportError:
+    DiscordMentionFixFeature = None
+
+try:
+    from astrbot_plugin_discord_plus_core.features.discord_reply_reference import (
+        DiscordReplyReferenceFeature,
+    )
+except ImportError:
+    DiscordReplyReferenceFeature = None
 
 
 @register(
@@ -35,21 +40,29 @@ class DiscordPlusPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig | None = None):
         super().__init__(context)
         self._plugin_config = config or {}
-        self.runtime = DiscordFeatureRuntime(
-            features=[
+        features = []
+        if DiscordReplyReferenceFeature is not None:
+            features.append(
                 DiscordReplyReferenceFeature(
                     logger=logger,
                     config_getter=self._reply_reference_enabled,
-                ),
+                )
+            )
+        if DiscordMentionFixFeature is not None:
+            features.append(
                 DiscordMentionFixFeature(
                     logger=logger,
                     config_getter=self._mention_fix_enabled,
-                ),
-                DiscordTypingFeature(
-                    logger=logger,
-                    config_getter=self._typing_enabled,
                 )
-            ],
+            )
+        features.append(
+            DiscordTypingFeature(
+                logger=logger,
+                config_getter=self._typing_enabled,
+            )
+        )
+        self.runtime = DiscordFeatureRuntime(
+            features=features,
             logger=logger,
         )
 
@@ -67,10 +80,41 @@ class DiscordPlusPlugin(Star):
         await self.runtime.on_decorating_result(event)
 
     def _typing_enabled(self) -> bool:
-        return get_typing_settings(self._plugin_config).enabled
+        return discord_plus_config.get_typing_settings(self._plugin_config).enabled
 
     def _mention_fix_enabled(self) -> bool:
-        return get_message_decoration_settings(self._plugin_config).mention_fix_enabled
+        return self._message_decoration_enabled("mention_fix_enabled")
 
     def _reply_reference_enabled(self) -> bool:
-        return get_message_decoration_settings(self._plugin_config).reply_reference_enabled
+        return self._message_decoration_enabled("reply_reference_enabled")
+
+    def _message_decoration_enabled(self, key: str) -> bool:
+        getter = getattr(discord_plus_config, "get_message_decoration_settings", None)
+        if callable(getter):
+            settings = getter(self._plugin_config)
+            return bool(getattr(settings, key, True))
+        return _coerce_bool(_mapping_get(self._plugin_config, key, True), default=True)
+
+
+def _mapping_get(obj, key: str, default):
+    if obj is None:
+        return default
+    getter = getattr(obj, "get", None)
+    if callable(getter):
+        try:
+            return getter(key, default)
+        except TypeError:
+            return getter(key)
+    return default
+
+
+def _coerce_bool(value, default: bool) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"1", "true", "yes", "on"}:
+            return True
+        if normalized in {"0", "false", "no", "off"}:
+            return False
+    return default
